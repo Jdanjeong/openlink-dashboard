@@ -752,12 +752,6 @@ function geocodeAll(){
     toGeo.forEach(function(f){if(!geoCache.hasOwnProperty(f.addr)) geoCache[f.addr]=null;});
     plotMarkers(); setLoad(false);
   });
-      plotMarkers();setLoad(false);
-    })
-    .catch(function(){
-      toGeo.forEach(function(f){geoCache[f.addr]=null;});
-      plotMarkers();setLoad(false);
-    });
 }
 
 // ─────────────────────────────────
