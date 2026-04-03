@@ -447,6 +447,29 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 
 <script>
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbzTq2_bhxoOJriaj5bz75bbxVHDJ685qlAcWZDd4IfFmLlKfWWhXiaTTtP-8gnVkXvE0w/exec';
+
+// JSONP 호출 (GAS CORS 우회)
+function gasCall(params, callback) {
+  var cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+  window[cbName] = function(data) {
+    delete window[cbName];
+    document.head.removeChild(script);
+    callback(null, data);
+  };
+  var qs = Object.keys(params).map(function(k){
+    return k + '=' + encodeURIComponent(
+      typeof params[k]==='object' ? JSON.stringify(params[k]) : params[k]
+    );
+  }).join('&');
+  var script = document.createElement('script');
+  script.onerror = function() {
+    delete window[cbName];
+    document.head.removeChild(script);
+    callback(new Error('JSONP 실패'));
+  };
+  script.src = GAS_URL + '?' + qs + '&callback=' + cbName;
+  document.head.appendChild(script);
+}
 var allData={}, facs=[], curDate='', allDates=[];
 var markers={}, geoCache={}, selName=null, reasons=[];
 var calY, calM, calOpen=false;
@@ -539,31 +562,26 @@ function normDate(d){
 // ─────────────────────────────────
 function loadData(){
   setLoad(true,'시트 데이터 불러오는 중...');
-  fetch(GAS_URL + '?action=getData')
-    .then(function(r){return r.json();})
-    .then(function(json){
-      if(!json||json.error){setLoad(false);alert('오류: '+(json&&json.error||'알 수 없음'));return;}
-      json.dates=(json.dates||[]).map(normDate).filter(function(d){return d&&d.indexOf('/')>=0;});
-      json.latestDate=normDate(json.latestDate||'');
-      (json.factories||[]).forEach(function(f){
-        if(!f.history) return;
-        var nh={};
-        Object.keys(f.history).forEach(function(k){var nk=normDate(k);if(nk) nh[nk]=f.history[k];});
-        f.history=nh;
-      });
-      allData=json;
-      allDates=allData.dates||[];
-      curDate=allData.latestDate||allDates[allDates.length-1]||'';
-      setLoad(true,'좌표 캐시 확인 중...');
-      return fetch(GAS_URL + '?action=getGeoCache');
-    })
-    .then(function(r){return r ? r.json() : {};})
-    .then(function(cache){
+  gasCall({action:'getData'}, function(err, json){
+    if(err||!json){setLoad(false);alert('로드 실패: '+(err&&err.message||'오류'));return;}
+    if(json.error){setLoad(false);alert('시트 오류: '+json.error);return;}
+    json.dates=(json.dates||[]).map(normDate).filter(function(d){return d&&d.indexOf('/')>=0;});
+    json.latestDate=normDate(json.latestDate||'');
+    (json.factories||[]).forEach(function(f){
+      if(!f.history) return;
+      var nh={};
+      Object.keys(f.history).forEach(function(k){var nk=normDate(k);if(nk) nh[nk]=f.history[k];});
+      f.history=nh;
+    });
+    allData=json; allDates=allData.dates||[];
+    curDate=allData.latestDate||allDates[allDates.length-1]||'';
+    setLoad(true,'좌표 캐시 확인 중...');
+    gasCall({action:'getGeoCache'}, function(err2, cache){
       var c=cache||{};
       Object.keys(c).forEach(function(k){geoCache[k]=c[k];});
       applyDate(curDate);
-    })
-    .catch(function(e){setLoad(false);alert('로드 실패: '+e.message);});
+    });
+  });
 }
 
 // ─────────────────────────────────
@@ -725,14 +743,15 @@ function geocodeAll(){
   setLoad(true,'공장 위치 매핑 중...');
   document.getElementById('ld-pg').textContent=toGeo.length+'개 주소 변환 중...';
   var addrs=toGeo.map(function(f){return f.addr;});
-  fetch(GAS_URL+'?action=geocode&addrs='+encodeURIComponent(JSON.stringify(addrs)))
-    .then(function(r){return r.json();})
-    .then(function(result){
-      var r=result||{};
-      Object.keys(r).forEach(function(addr){
-        var v=r[addr];
-        geoCache[addr]=(v&&v.lat&&v.lng)?{lat:v.lat,lng:v.lng}:null;
-      });
+  gasCall({action:'geocode', addrs:addrs}, function(err, result){
+    var r=result||{};
+    Object.keys(r).forEach(function(addr){
+      var v=r[addr];
+      geoCache[addr]=(v&&v.lat&&v.lng)?{lat:v.lat,lng:v.lng}:null;
+    });
+    toGeo.forEach(function(f){if(!geoCache.hasOwnProperty(f.addr)) geoCache[f.addr]=null;});
+    plotMarkers(); setLoad(false);
+  });
       plotMarkers();setLoad(false);
     })
     .catch(function(){
@@ -923,24 +942,22 @@ function submitReason(){
     woori:woori, hyundai:hyundai, total:total,
     reason:rs, submitter:sb
   });
-  fetch(GAS_URL+'?'+params.toString())
-    .then(function(r){return r.json();})
-    .then(function(){
-      btn.textContent='제출'; btn.disabled=false;
-      closeMo(); loadReasons();
-      alert('제출되었습니다. 스프레드시트에 저장되었습니다.');
-    })
-    .catch(function(e){
-      alert('제출 실패: '+e.message);
-      btn.textContent='제출'; btn.disabled=false;
-    });
+  gasCall({
+    action:'saveReason', date:curDate, factoryName:name,
+    addr:f.addr||'', woori:woori, hyundai:hyundai, total:total,
+    reason:rs, submitter:sb
+  }, function(err){
+    btn.textContent='제출'; btn.disabled=false;
+    if(err){alert('제출 실패: '+err.message);return;}
+    closeMo(); loadReasons();
+    alert('제출되었습니다.');
+  });
 }
 
 function loadReasons(){
-  fetch(GAS_URL+'?action=getReasons')
-    .then(function(r){return r.json();})
-    .then(function(data){reasons=data||[];renderReasons();})
-    .catch(function(){});
+  gasCall({action:'getReasons'}, function(err, data){
+    reasons=data||[]; renderReasons();
+  });
 }
 
 function renderReasons(){
