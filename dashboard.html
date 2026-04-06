@@ -107,11 +107,12 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 }
 
 /* 좌측 50%: 지도 */
-#map-col{width:50%;height:100%;position:relative;flex-shrink:0}
-#map{width:100%;height:100%;background:#e8eef4;display:block}
+#map-col{width:50%;height:100%;position:relative;flex-shrink:0;z-index:1;user-select:none;-webkit-user-select:none}
+#map{width:100%;height:100%;background:#e8eef4;display:block;cursor:grab}
+#map:active{cursor:grabbing}
 
 /* 지도 위 요약 */
-#ms{position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10}
+#ms{position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;pointer-events:none}
 .msc{
   background:var(--white);border-radius:8px;border:1px solid var(--bd);
   padding:8px 12px;text-align:center;min-width:70px;
@@ -573,13 +574,21 @@ function initMap(){
   }
   var container=document.getElementById('map');
   var options={
-    center:new kakao.maps.LatLng(36.5,127.9),
-    level:8
+    center:new kakao.maps.LatLng(36.2,127.9),
+    level:13,
+    draggable:true,
+    scrollwheel:true,
+    disableDoubleClickZoom:false
   };
   naverMap=new kakao.maps.Map(container,options);
   var zc=new kakao.maps.ZoomControl();
   naverMap.addControl(zc,kakao.maps.ControlPosition.LEFT);
   mapReady=true;
+
+  // 드래그 이벤트 강제 활성화 (마커 SVG 간섭 방지)
+  kakao.maps.event.addListener(naverMap, 'dragstart', function(){});
+  kakao.maps.event.addListener(naverMap, 'drag', function(){});
+  kakao.maps.event.addListener(naverMap, 'dragend', function(){});
 }
 
 // ─────────────────────────────────
