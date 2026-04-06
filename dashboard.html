@@ -3,11 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <title>입고현황 대시보드 | OpenLink</title>
-<script type="text/javascript"
-  src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9ca121f1d5a3a734a8cfdf6792717c07">
-</script>
 <script>
-window._kakaoMapReady = true; // 동기 로드이므로 즉시 true
+// 카카오 지도 SDK - autoload=false 방식 (콜백으로 완전 로드 보장)
+window._kakaoMapReady = false;
+window._kakaoMapCallback = null;
+(function(){
+  var s = document.createElement('script');
+  s.type = 'text/javascript';
+  s.async = true;
+  s.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=9ca121f1d5a3a734a8cfdf6792717c07&autoload=false';
+  s.onload = function() {
+    kakao.maps.load(function() {
+      window._kakaoMapReady = true;
+      if(window._kakaoMapCallback) window._kakaoMapCallback();
+    });
+  };
+  s.onerror = function() {
+    console.error('카카오 SDK 로드 실패 (503) - 도메인 인증 필요');
+    window._kakaoMapReady = 'failed';
+    if(window._kakaoMapCallback) window._kakaoMapCallback();
+  };
+  document.head.appendChild(s);
+})();
 </script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -493,15 +510,23 @@ window.onload = function(){
 };
 
 function waitMapReady(cb){
-  // 동기 로드이므로 즉시 체크
-  if(window.kakao && window.kakao.maps){ cb(); return; }
-  // 혹시 늦게 로드될 경우 대비
-  var tries=0;
-  var t=setInterval(function(){
-    tries++;
-    if(window.kakao && window.kakao.maps){ clearInterval(t); cb(); return; }
-    if(tries > 30){ clearInterval(t); console.warn('카카오 지도 로드 타임아웃'); cb(); }
-  },200);
+  // 이미 로드됨
+  if(window._kakaoMapReady === true){ cb(); return; }
+  // 실패 상태
+  if(window._kakaoMapReady === 'failed'){ cb(); return; }
+  // 아직 로드 중 - 콜백 등록
+  window._kakaoMapCallback = function(){
+    window._kakaoMapCallback = null;
+    cb();
+  };
+  // 20초 타임아웃 안전장치
+  setTimeout(function(){
+    if(window._kakaoMapCallback){
+      console.warn('카카오 지도 로드 타임아웃');
+      window._kakaoMapCallback = null;
+      cb();
+    }
+  }, 20000);
 }
 
 function p2(n){return String(n).padStart(2,'0');}
@@ -517,8 +542,11 @@ function clock(){
 }
 
 function initMap(){
-  if(!window.kakao || !window.kakao.maps){
-    console.warn('카카오 지도 미로드 - 지도 기능 비활성화');
+  if(!window.kakao || !window.kakao.maps || window._kakaoMapReady === 'failed'){
+    var reason = window._kakaoMapReady === 'failed' 
+      ? '카카오 도메인 인증 실패 (503)\n개발자콘솔에서 jdanjeong.github.io 등록 확인' 
+      : '카카오 SDK 미로드';
+    console.warn('카카오 지도 미로드 - 지도 기능 비활성화:', reason);
     document.getElementById('map').innerHTML=
       '<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;background:#f1f5f9">'
       +'<div style="font-size:32px">🗺️</div>'
@@ -741,17 +769,32 @@ function geocodeAll(){
   var toGeo=facs.filter(function(f){return f.addr&&!geoCache.hasOwnProperty(f.addr);});
   if(!toGeo.length){plotMarkers();return;}
   setLoad(true,'공장 위치 매핑 중...');
-  document.getElementById('ld-pg').textContent=toGeo.length+'개 주소 변환 중...';
   var addrs=toGeo.map(function(f){return f.addr;});
-  gasCall({action:'geocode', addrs:addrs}, function(err, result){
-    var r=result||{};
-    Object.keys(r).forEach(function(addr){
-      var v=r[addr];
-      geoCache[addr]=(v&&v.lat&&v.lng)?{lat:v.lat,lng:v.lng}:null;
+  var BATCH=20; // GAS 타임아웃 방지: 20개씩 분할
+  var total=addrs.length;
+  var done=0;
+
+  function nextBatch(idx){
+    if(idx>=total){
+      // 모든 배치 완료
+      toGeo.forEach(function(f){if(!geoCache.hasOwnProperty(f.addr)) geoCache[f.addr]=null;});
+      plotMarkers(); setLoad(false);
+      return;
+    }
+    var batch=addrs.slice(idx, idx+BATCH);
+    document.getElementById('ld-pg').textContent=
+      Math.min(idx+BATCH,total)+' / '+total+'개 주소 변환 중...';
+    gasCall({action:'geocode', addrs:batch}, function(err, result){
+      var r=result||{};
+      Object.keys(r).forEach(function(addr){
+        var v=r[addr];
+        geoCache[addr]=(v&&v.lat&&v.lng)?{lat:v.lat,lng:v.lng}:null;
+      });
+      done+=batch.length;
+      nextBatch(idx+BATCH);
     });
-    toGeo.forEach(function(f){if(!geoCache.hasOwnProperty(f.addr)) geoCache[f.addr]=null;});
-    plotMarkers(); setLoad(false);
-  });
+  }
+  nextBatch(0);
 }
 
 // ─────────────────────────────────
