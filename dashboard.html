@@ -465,7 +465,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
     <div class="mo-info" id="mo-info"></div>
     <div class="mo-fd">
       <label class="mo-lb">제출자</label>
-      <input class="mo-in" id="mo-sub" placeholder="홍길동 (사고팀)">
+      <input class="mo-in" id="mo-sub" placeholder="홍길동 (사고전담2팀)">
     </div>
     <div class="mo-fd">
       <label class="mo-lb">입고 사유 <span style="color:var(--ban)">*</span></label>
@@ -1057,7 +1057,7 @@ function startRolling(type) {
   if (contH <= listH) return;
 
   var speed  = 0.5;   // px/frame (빠르기 조절)
-  var pauseT = 2000;  // 맨 위/아래에서 멈추는 시간(ms)
+  var pauseT = 500;  // 맨 위/아래에서 멈추는 시간(ms)
   var dir    = 1;     // 1=아래, -1=위
 
   _rollPos[type]    = 0;
