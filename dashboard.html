@@ -221,9 +221,24 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 .col-inp.warn:focus{border-color:#FAAD14}
 
 /* 카드 리스트 */
-.col-list{flex:1;overflow-y:auto;padding:8px 8px 60px}
-.col-list::-webkit-scrollbar{width:3px}
-.col-list::-webkit-scrollbar-thumb{background:#E2E8F0;border-radius:2px}
+.col-list{flex:1;overflow:hidden;padding:0;position:relative}
+.col-list::-webkit-scrollbar{display:none}
+
+/* 롤링 래퍼 */
+.roll-wrap{
+  padding:8px 8px 8px;
+  will-change:transform;
+}
+.roll-wrap.rolling{
+  animation:none; /* JS로 제어 */
+}
+
+/* 상단/하단 페이드 */
+.col-list::before,.col-list::after{
+  content:'';position:absolute;left:0;right:0;height:28px;z-index:5;pointer-events:none;
+}
+.col-list::before{top:0;background:linear-gradient(to bottom,var(--white),transparent)}
+.col-list::after{bottom:0;background:linear-gradient(to top,var(--white),transparent)}
 
 /* 입고금지 카드 */
 .bc{
@@ -702,8 +717,9 @@ function renderLists(){
 
 function renderBan(list){
   var w=document.getElementById('ban-list');
+  stopRolling('ban');
   if(!list.length){
-    w.innerHTML='<div class="empty"><div class="empty-ic">✅</div><div class="empty-ms">입고금지 공장 없음</div><div class="empty-sb">'+curDate+'</div></div>';
+    w.innerHTML='<div class="roll-wrap"><div class="empty"><div class="empty-ic">✅</div><div class="empty-ms">입고금지 공장 없음</div><div class="empty-sb">'+curDate+'</div></div></div>';
     return;
   }
   var html='';
@@ -731,13 +747,15 @@ function renderBan(list){
     html+='</div>';
     html+='</div>';
   });
-  w.innerHTML=html;
+  w.innerHTML='<div class="roll-wrap" id="ban-roll">'+html+'</div>';
+  setTimeout(function(){startRolling('ban');},1000);
 }
 
 function renderWarn(list){
   var w=document.getElementById('warn-list');
+  stopRolling('warn');
   if(!list.length){
-    w.innerHTML='<div class="empty"><div class="empty-ic">👍</div><div class="empty-ms">입고제한 공장 없음</div><div class="empty-sb">'+curDate+'</div></div>';
+    w.innerHTML='<div class="roll-wrap"><div class="empty"><div class="empty-ic">👍</div><div class="empty-ms">입고제한 공장 없음</div><div class="empty-sb">'+curDate+'</div></div></div>';
     return;
   }
   var html='';
@@ -754,7 +772,8 @@ function renderWarn(list){
     html+='<span class="wcp t">당일+'+(f.total||0)+'대</span>';
     html+='</div></div>';
   });
-  w.innerHTML=html;
+  w.innerHTML='<div class="roll-wrap" id="warn-roll">'+html+'</div>';
+  setTimeout(function(){startRolling('warn');},1500);
 }
 
 function scrollToNR(){
@@ -802,48 +821,42 @@ function geocodeAll(){
 // ─────────────────────────────────
 function plotMarkers(){
   if(!mapReady||!naverMap) return;
-  // 기존 마커 제거
   Object.values(markers).forEach(function(m){m.setMap(null);}); markers={};
 
   facs.forEach(function(f){
     var pos=geoCache[f.addr]; if(!pos) return;
     var cfg={
-      ban: {c:'#C8281E',sz:18,pulse:true},
-      warn:{c:'#FAAD14',sz:14,pulse:false},
-      ok:  {c:'#52C41A',sz:10,pulse:false},
-      none:{c:'#CBD5E1',sz:7, pulse:false}
-    }[f.status]||{c:'#CBD5E1',sz:7,pulse:false};
+      ban: {c:'#C8281E',sz:18},
+      warn:{c:'#FAAD14',sz:14},
+      ok:  {c:'#52C41A',sz:10},
+      none:{c:'#CBD5E1',sz:7}
+    }[f.status]||{c:'#CBD5E1',sz:7};
 
-    var dot='<div style="'
-      +'width:'+(cfg.sz*2)+'px;height:'+(cfg.sz*2)+'px;'
-      +'background:'+cfg.c+';border-radius:50%;'
-      +'border:2.5px solid rgba(255,255,255,.9);'
-      +'box-shadow:0 2px 8px rgba(0,0,0,.3);'
-      +'cursor:pointer;display:flex;align-items:center;justify-content:center;'
-      +(cfg.pulse?'animation:mpulse 2s infinite;':'')
-      +'">'
-      +(f.status==='ban'?'<span style="color:#fff;font-size:10px;font-weight:800;line-height:1">!</span>':'')
-      +'</div>';
+    var sz=cfg.sz;
+    var svgStr='<svg xmlns="http://www.w3.org/2000/svg" width="'+(sz*2)+'" height="'+(sz*2)+'">'
+      +'<circle cx="'+sz+'" cy="'+sz+'" r="'+(sz-2)+'" fill="'+cfg.c+'" stroke="white" stroke-width="2.5"/>'
+      +(f.status==='ban'?'<text x="'+sz+'" y="'+(sz+4)+'" text-anchor="middle" fill="white" font-size="10" font-weight="bold">!</text>':'')
+      +'</svg>';
 
-    var pos_obj=new kakao.maps.LatLng(pos.lat,pos.lng);
-    var mk=new kakao.maps.CustomOverlay({
-      position:pos_obj,
-      content:dot,
-      map:naverMap,
-      zIndex:f.status==='ban'?3:f.status==='warn'?2:1
+    var markerImg=new kakao.maps.MarkerImage(
+      'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr),
+      new kakao.maps.Size(sz*2, sz*2),
+      {offset: new kakao.maps.Point(sz, sz)}
+    );
+
+    var mk=new kakao.maps.Marker({
+      position: new kakao.maps.LatLng(pos.lat, pos.lng),
+      map: naverMap,
+      image: markerImg,
+      title: f.name,
+      clickable: true
     });
 
-    // 클릭 이벤트 (CustomOverlay는 content DOM에 직접 등록)
-    (function(factory,overlay){
-      var el=document.createElement('div');
-      el.innerHTML=dot;
-      var d=el.firstChild;
-      d.addEventListener('click',function(){
-        showPop(factory);
-        hilite(factory.name);
+    (function(factory, marker){
+      kakao.maps.event.addListener(marker,'click',function(){
+        showPop(factory); hilite(factory.name);
       });
-      overlay.setContent(d);
-    })(f,mk);
+    })(f, mk);
 
     markers[f.name]=mk;
   });
@@ -876,22 +889,25 @@ function hilite(name){
   selName=name;
   var els=document.querySelectorAll('.bc,.wc');
   for(var i=0;i<els.length;i++) els[i].classList.toggle('on',els[i].dataset.n===name);
+
   Object.keys(markers).forEach(function(n){
     var mk=markers[n];
-    var f=facs.find(function(x){return x.name===n;});
-    if(!f) return;
-    var cfg={ban:{c:'#C8281E',sz:18},warn:{c:'#FAAD14',sz:14},ok:{c:'#52C41A',sz:10},none:{c:'#CBD5E1',sz:7}}[f.status]||{c:'#CBD5E1',sz:7};
+    var f=facs.find(function(x){return x.name===n;}); if(!f) return;
+    var base={ban:{c:'#C8281E',sz:18},warn:{c:'#FAAD14',sz:14},ok:{c:'#52C41A',sz:10},none:{c:'#CBD5E1',sz:7}}[f.status]||{c:'#CBD5E1',sz:7};
     var isOn=(n===name);
-    var dot='<div style="'
-      +'width:'+(isOn?(cfg.sz+4)*2:cfg.sz*2)+'px;height:'+(isOn?(cfg.sz+4)*2:cfg.sz*2)+'px;'
-      +'background:'+cfg.c+';border-radius:50%;'
-      +'border:'+(isOn?'3px solid #1A1A2E':'2.5px solid rgba(255,255,255,.9)')+';'
-      +'box-shadow:0 2px 8px rgba(0,0,0,.3);'
-      +'cursor:pointer;display:flex;align-items:center;justify-content:center;">'
-      +(f.status==='ban'?'<span style="color:#fff;font-size:10px;font-weight:800;line-height:1">!</span>':'')
-      +'</div>';
-    var sz=isOn?cfg.sz+4:cfg.sz;
-    // 카카오는 setContent로 처리 (아래 코드에서 처리됨)
+    var sz=isOn?base.sz+4:base.sz;
+    var stroke=isOn?'#1A1A2E':'white';
+    var sw=isOn?3:2.5;
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+(sz*2)+'" height="'+(sz*2)+'">'
+      +'<circle cx="'+sz+'" cy="'+sz+'" r="'+(sz-2)+'" fill="'+base.c+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'
+      +(f.status==='ban'?'<text x="'+sz+'" y="'+(sz+4)+'" text-anchor="middle" fill="white" font-size="10" font-weight="bold">!</text>':'')
+      +'</svg>';
+    var img=new kakao.maps.MarkerImage(
+      'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),
+      new kakao.maps.Size(sz*2,sz*2),
+      {offset:new kakao.maps.Point(sz,sz)}
+    );
+    mk.setImage(img);
   });
 }
 
@@ -1013,6 +1029,93 @@ function renderReasons(){
   wrap.innerHTML=html;
 }
 function toggleRL(){document.getElementById('rl').classList.toggle('open');}
+
+
+// ── 자동 롤링 ────────────────────────────────────────────────────
+var _rollTimers = {};
+var _rollPos    = {ban:0, warn:0};
+var _rollPaused = {ban:false, warn:false};
+
+function startRolling(type) {
+  var listEl = document.getElementById(type+'-list');
+  var rollEl = document.getElementById(type+'-roll');
+  if (!listEl || !rollEl) return;
+
+  var listH  = listEl.clientHeight;   // 보이는 영역 높이
+  var contH  = rollEl.scrollHeight;   // 전체 콘텐츠 높이
+
+  // 콘텐츠가 보이는 영역보다 작으면 롤링 불필요
+  if (contH <= listH) return;
+
+  var speed  = 0.5;   // px/frame (빠르기 조절)
+  var pauseT = 2000;  // 맨 위/아래에서 멈추는 시간(ms)
+  var dir    = 1;     // 1=아래, -1=위
+
+  _rollPos[type]    = 0;
+  _rollPaused[type] = false;
+
+  function frame() {
+    if (_rollPaused[type]) return;
+    listEl = document.getElementById(type+'-list');
+    rollEl = document.getElementById(type+'-roll');
+    if (!listEl || !rollEl) return;
+
+    listH = listEl.clientHeight;
+    contH = rollEl.scrollHeight;
+    var maxScroll = contH - listH;
+    if (maxScroll <= 0) return;
+
+    _rollPos[type] += speed * dir;
+
+    // 맨 아래 도달
+    if (_rollPos[type] >= maxScroll) {
+      _rollPos[type] = maxScroll;
+      rollEl.style.transform = 'translateY(-' + _rollPos[type] + 'px)';
+      _rollPaused[type] = true;
+      setTimeout(function() {
+        dir = -1;
+        _rollPaused[type] = false;
+        _rollTimers[type] = requestAnimationFrame(frame);
+      }, pauseT);
+      return;
+    }
+    // 맨 위 도달
+    if (_rollPos[type] <= 0) {
+      _rollPos[type] = 0;
+      rollEl.style.transform = 'translateY(0)';
+      _rollPaused[type] = true;
+      setTimeout(function() {
+        dir = 1;
+        _rollPaused[type] = false;
+        _rollTimers[type] = requestAnimationFrame(frame);
+      }, pauseT);
+      return;
+    }
+
+    rollEl.style.transform = 'translateY(-' + _rollPos[type] + 'px)';
+    _rollTimers[type] = requestAnimationFrame(frame);
+  }
+
+  // 마우스 올리면 일시정지
+  listEl.onmouseenter = function(){ _rollPaused[type]=true; };
+  listEl.onmouseleave = function(){ _rollPaused[type]=false; _rollTimers[type]=requestAnimationFrame(frame); };
+
+  if (_rollTimers[type]) cancelAnimationFrame(_rollTimers[type]);
+  _rollTimers[type] = requestAnimationFrame(frame);
+}
+
+function stopRolling(type) {
+  if (_rollTimers[type]) {
+    cancelAnimationFrame(_rollTimers[type]);
+    _rollTimers[type] = null;
+  }
+  _rollPos[type] = 0;
+  _rollPaused[type] = false;
+  var listEl = document.getElementById(type+'-list');
+  var rollEl = document.getElementById(type+'-roll');
+  if (listEl) { listEl.onmouseenter=null; listEl.onmouseleave=null; }
+  if (rollEl) rollEl.style.transform = 'translateY(0)';
+}
 
 // ─────────────────────────────────
 // 로딩
