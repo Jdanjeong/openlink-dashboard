@@ -225,7 +225,9 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 
 /* 카드 리스트 */
 .col-list{flex:1;overflow:hidden;padding:0;position:relative}
-.col-list::-webkit-scrollbar{display:none}
+.col-list::-webkit-scrollbar{width:3px}
+.col-list::-webkit-scrollbar-thumb{background:#E2E8F0;border-radius:2px}
+.col-list.scrollable{overflow-y:auto}
 
 /* 롤링 래퍼 */
 .roll-wrap{
@@ -394,6 +396,8 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
       <div class="lr"><div class="ld ok"></div>원활</div>
       <div class="lr"><div class="ld none"></div>실적없음</div>
     </div>
+    <!-- 전체보기 버튼 -->
+    <button id="map-reset" onclick="resetMapView()">🗺️ 전체보기</button>
     <div id="pop">
       <button id="pop-x" onclick="closePop()">✕</button>
       <div class="ph"><div class="pn" id="pop-nm"></div><div class="pb" id="pop-bd"></div></div>
@@ -1080,15 +1084,13 @@ function startRolling(type) {
   var rollEl = document.getElementById(type+'-roll');
   if (!listEl || !rollEl) return;
 
-  var listH  = listEl.clientHeight;   // 보이는 영역 높이
-  var contH  = rollEl.scrollHeight;   // 전체 콘텐츠 높이
+  var listH = listEl.clientHeight;
+  var contH = rollEl.scrollHeight;
+  if (contH <= listH) return; // 콘텐츠가 짧으면 롤링 불필요
 
-  // 콘텐츠가 보이는 영역보다 작으면 롤링 불필요
-  if (contH <= listH) return;
-
-  var speed  = 0.5;   // px/frame (빠르기 조절)
-  var pauseT = 2000;  // 맨 위/아래에서 멈추는 시간(ms)
-  var dir    = 1;     // 1=아래, -1=위
+  var speed  = 0.5;   // px/frame
+  var pauseT = 2000;  // 맨 위/아래 멈춤 시간(ms)
+  var dir    = 1;
 
   _rollPos[type]    = 0;
   _rollPaused[type] = false;
@@ -1106,26 +1108,22 @@ function startRolling(type) {
 
     _rollPos[type] += speed * dir;
 
-    // 맨 아래 도달
     if (_rollPos[type] >= maxScroll) {
       _rollPos[type] = maxScroll;
       rollEl.style.transform = 'translateY(-' + _rollPos[type] + 'px)';
       _rollPaused[type] = true;
       setTimeout(function() {
-        dir = -1;
-        _rollPaused[type] = false;
+        dir = -1; _rollPaused[type] = false;
         _rollTimers[type] = requestAnimationFrame(frame);
       }, pauseT);
       return;
     }
-    // 맨 위 도달
     if (_rollPos[type] <= 0) {
       _rollPos[type] = 0;
       rollEl.style.transform = 'translateY(0)';
       _rollPaused[type] = true;
       setTimeout(function() {
-        dir = 1;
-        _rollPaused[type] = false;
+        dir = 1; _rollPaused[type] = false;
         _rollTimers[type] = requestAnimationFrame(frame);
       }, pauseT);
       return;
@@ -1135,9 +1133,28 @@ function startRolling(type) {
     _rollTimers[type] = requestAnimationFrame(frame);
   }
 
-  // 마우스 올리면 일시정지
-  listEl.onmouseenter = function(){ _rollPaused[type]=true; };
-  listEl.onmouseleave = function(){ _rollPaused[type]=false; _rollTimers[type]=requestAnimationFrame(frame); };
+  // ── 마우스 진입: 롤링 멈추고 수동 스크롤 모드 전환 ──
+  listEl.onmouseenter = function() {
+    _rollPaused[type] = true;
+    if (_rollTimers[type]) { cancelAnimationFrame(_rollTimers[type]); _rollTimers[type] = null; }
+
+    // roll-wrap을 translateY 고정하고 listEl을 스크롤 가능하게 전환
+    var currentOffset = _rollPos[type];
+    rollEl.style.transform = 'translateY(0)';   // 위치 리셋
+    rollEl.style.position  = 'relative';
+    listEl.classList.add('scrollable');           // overflow:auto 활성화
+    listEl.scrollTop = currentOffset;             // 현재 롤링 위치로 스크롤 이동
+  };
+
+  // ── 마우스 이탈: 수동 스크롤 위치 기억 후 롤링 재개 ──
+  listEl.onmouseleave = function() {
+    // 현재 스크롤 위치를 롤링 위치로 동기화
+    _rollPos[type] = listEl.scrollTop;
+    listEl.classList.remove('scrollable');        // overflow:hidden 복원
+    rollEl.style.transform = 'translateY(-' + _rollPos[type] + 'px)';
+    _rollPaused[type] = false;
+    _rollTimers[type] = requestAnimationFrame(frame);
+  };
 
   if (_rollTimers[type]) cancelAnimationFrame(_rollTimers[type]);
   _rollTimers[type] = requestAnimationFrame(frame);
@@ -1152,8 +1169,16 @@ function stopRolling(type) {
   _rollPaused[type] = false;
   var listEl = document.getElementById(type+'-list');
   var rollEl = document.getElementById(type+'-roll');
-  if (listEl) { listEl.onmouseenter=null; listEl.onmouseleave=null; }
-  if (rollEl) rollEl.style.transform = 'translateY(0)';
+  if (listEl) {
+    listEl.onmouseenter = null;
+    listEl.onmouseleave = null;
+    listEl.classList.remove('scrollable');
+    listEl.scrollTop = 0;
+  }
+  if (rollEl) {
+    rollEl.style.transform = 'translateY(0)';
+    rollEl.style.position = '';
+  }
 }
 
 // ─────────────────────────────────
