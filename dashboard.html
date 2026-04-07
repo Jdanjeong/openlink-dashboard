@@ -113,6 +113,8 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 
 /* 지도 위 요약 */
 #ms{position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;pointer-events:none}
+#map-reset{position:absolute;top:10px;right:10px;z-index:10;padding:7px 13px;background:var(--white);border:1px solid var(--bd);border-radius:6px;font-size:12px;font-weight:600;color:var(--dark);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);font-family:var(--font);display:flex;align-items:center;gap:5px;}
+#map-reset:hover{background:var(--bg);border-color:var(--dark)}
 .msc{
   background:var(--white);border-radius:8px;border:1px solid var(--bd);
   padding:8px 12px;text-align:center;min-width:70px;
@@ -143,7 +145,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 #pop{
   position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
   background:var(--white);border-radius:11px;
-  padding:13px 15px 12px;min-width:240px;max-width:310px;
+  padding:16px 18px 15px;min-width:300px;max-width:400px;
   box-shadow:0 4px 20px rgba(0,0,0,.18);z-index:10;display:none;
   border-top:3px solid var(--bd);
 }
@@ -153,17 +155,17 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 #pop.ok-p{border-top-color:var(--ok)}
 #pop-x{position:absolute;top:9px;right:11px;font-size:14px;cursor:pointer;color:var(--lt);background:none;border:none}
 .ph{display:flex;align-items:center;gap:6px;margin-bottom:5px}
-.pn{font-size:14px;font-weight:700}
+.pn{font-size:16px;font-weight:800}
 .pb{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap}
 .pb.ban{background:var(--ban-bg);color:var(--ban);border:1px solid var(--ban-bd)}
 .pb.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd)}
 .pb.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
-.pa{font-size:11px;color:var(--mid);margin-bottom:9px;line-height:1.4}
+.pa{font-size:12px;color:var(--mid);margin-bottom:10px;line-height:1.5}
 .plbl{font-size:10px;color:var(--lt);font-weight:600;margin-bottom:4px}
 .pps{display:flex;gap:5px;margin-bottom:8px}
 .pp{flex:1;text-align:center;padding:7px 3px;border-radius:6px}
-.pp .pv{font-size:17px;font-weight:700;display:block;margin-bottom:2px}
-.pp .pl{font-size:9px;font-weight:500}
+.pp .pv{font-size:20px;font-weight:700;display:block;margin-bottom:2px}
+.pp .pl{font-size:10px;font-weight:600}
 .pp.w{background:#EFF6FF;color:#1D4ED8}
 .pp.h{background:#F0FDF4;color:#166534}
 .pp.t{background:#F5F3FF;color:#6D28D9}
@@ -252,7 +254,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 .bc-top{padding:9px 11px 6px;border-bottom:1px solid var(--ban-bd)}
 .bc-row1{display:flex;align-items:center;gap:5px;margin-bottom:3px}
 .bc-seq{font-size:9px;font-weight:700;color:var(--ban);background:#fff;border:1px solid var(--ban-bd);padding:1px 5px;border-radius:3px;flex-shrink:0}
-.bc-nm{font-size:12px;font-weight:700;color:var(--ban);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bc-nm{font-size:14px;font-weight:800;color:var(--ban);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .bc-nr-badge{flex-shrink:0;background:var(--ban);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px}
 .bc-ad{font-size:10px;color:#9B2335;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .bc-bt{padding:7px 11px;display:flex;align-items:center;gap:5px}
@@ -272,7 +274,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 .wc-top{padding:9px 11px 6px;border-bottom:1px solid var(--warn-bd)}
 .wc-row1{display:flex;align-items:center;gap:5px;margin-bottom:3px}
 .wc-seq{font-size:9px;font-weight:700;color:var(--warn);background:#fff;border:1px solid var(--warn-bd);padding:1px 5px;border-radius:3px;flex-shrink:0}
-.wc-nm{font-size:12px;font-weight:700;color:var(--warn);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.wc-nm{font-size:14px;font-weight:800;color:var(--warn);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .wc-ad{font-size:10px;color:#875500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .wc-bt{padding:7px 11px;display:flex;gap:5px}
 .wcp{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500}
@@ -390,7 +392,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
       <div class="lr"><div class="ld ban"></div>입고금지 (!)</div>
       <div class="lr"><div class="ld warn"></div>입고제한</div>
       <div class="lr"><div class="ld ok"></div>원활</div>
-      <div class="lr"><div class="ld none"></div>입고없음</div>
+      <div class="lr"><div class="ld none"></div>실적없음</div>
     </div>
     <div id="pop">
       <button id="pop-x" onclick="closePop()">✕</button>
@@ -437,7 +439,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
           <div class="col-cnt ban" id="ban-cnt">0</div>
           <div class="col-date" id="ban-date"></div>
         </div>
-        <div id="nr-alert" class="nr-alert" onclick="scrollToNR()"></div>
+        <div id="nr-alert" class="nr-alert" onclick="openNRModal()"></div>
       </div>
       <div class="col-srch">
         <input class="col-inp ban" id="ban-inp" type="text" placeholder="검색..." oninput="renderLists()">
@@ -456,6 +458,34 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
   <div id="rl"></div>
 </div>
 
+
+<!-- 사유필요 상세 모달 -->
+<div id="nr-mo-ov" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;align-items:center;justify-content:center">
+  <div id="nr-mo" style="background:#fff;border-radius:13px;padding:22px 24px;width:560px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 12px 44px rgba(0,0,0,.22)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#C8281E">⚠️ 입고금지 공장 접수 증가</div>
+        <div style="font-size:11px;color:#64748B;margin-top:2px" id="nr-mo-date"></div>
+      </div>
+      <button onclick="closeNRModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;padding:0 4px">✕</button>
+    </div>
+    <!-- 공장 리스트 -->
+    <div id="nr-mo-list" style="flex:1;overflow-y:auto;margin-bottom:16px;border:1px solid #FFCCC7;border-radius:8px"></div>
+    <!-- 일괄 사유 입력 -->
+    <div style="flex-shrink:0;border-top:1px solid #E2E8F0;padding-top:14px">
+      <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:6px">선택 공장 일괄 사유 제출</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input id="nr-mo-sub" placeholder="제출자 이름" style="flex:1;padding:7px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;outline:none;font-family:inherit">
+        <textarea id="nr-mo-rs" placeholder="입고 사유를 입력해 주세요" style="flex:2;padding:7px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;outline:none;font-family:inherit;resize:none;height:60px"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeNRModal()" style="padding:8px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#F1F5F9;color:#1A1A2E;font-family:inherit">취소</button>
+        <button onclick="submitNRAll()" id="nr-mo-btn" style="padding:8px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#C8281E;color:#fff;font-family:inherit">체크된 공장 일괄 제출</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 사유 모달 -->
 <div id="mo-ov">
   <div id="mo">
@@ -465,7 +495,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
     <div class="mo-info" id="mo-info"></div>
     <div class="mo-fd">
       <label class="mo-lb">제출자</label>
-      <input class="mo-in" id="mo-sub" placeholder="홍길동 (사고전담2팀)">
+      <input class="mo-in" id="mo-sub" placeholder="홍길동 (사고팀)">
     </div>
     <div class="mo-fd">
       <label class="mo-lb">입고 사유 <span style="color:var(--ban)">*</span></label>
@@ -1057,7 +1087,7 @@ function startRolling(type) {
   if (contH <= listH) return;
 
   var speed  = 0.5;   // px/frame (빠르기 조절)
-  var pauseT = 500;  // 맨 위/아래에서 멈추는 시간(ms)
+  var pauseT = 2000;  // 맨 위/아래에서 멈추는 시간(ms)
   var dir    = 1;     // 1=아래, -1=위
 
   _rollPos[type]    = 0;
@@ -1129,6 +1159,89 @@ function stopRolling(type) {
 // ─────────────────────────────────
 // 로딩
 // ─────────────────────────────────
+
+
+// ── 사유필요 공장 모달 ────────────────────────────────────────
+function openNRModal(){
+  var nrFacs = facs.filter(function(f){ return f.needsReason; });
+  if(!nrFacs.length) return;
+
+  document.getElementById('nr-mo-date').textContent = curDate + ' 기준  |  ' + nrFacs.length + '개 공장';
+  document.getElementById('nr-mo-sub').value = '';
+  document.getElementById('nr-mo-rs').value = '';
+
+  var html = '';
+  nrFacs.forEach(function(f, i){
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #FFF1F0;background:'+(i%2===0?'#FFF1F0':'#fff')+'">';
+    html += '<input type="checkbox" id="nr-chk-'+i+'" checked style="width:16px;height:16px;cursor:pointer;flex-shrink:0">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:14px;font-weight:800;color:#C8281E;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+e2(f.name)+'</div>';
+    html += '<div style="font-size:11px;color:#9B2335;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">📍 '+e2(f.addr)+'</div>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:6px;flex-shrink:0">';
+    html += '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600">우리 +'+(f.woori||0)+'</span>';
+    html += '<span style="background:#DCFCE7;color:#166534;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600">현대 +'+(f.hyundai||0)+'</span>';
+    html += '<span style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700">합계 +'+(f.total||0)+'대</span>';
+    html += '</div>';
+    html += '<button onclick="openModalFor('+esc(f.name)+')" style="flex-shrink:0;padding:4px 10px;background:#FFF1F0;border:1px solid #FFCCC7;border-radius:5px;font-size:10px;font-weight:700;color:#C8281E;cursor:pointer;font-family:inherit">개별제출</button>';
+    html += '</div>';
+  });
+  document.getElementById('nr-mo-list').innerHTML = html;
+
+  var ov = document.getElementById('nr-mo-ov');
+  ov.style.display = 'flex';
+  // nr-facs 저장
+  window._nrFacs = nrFacs;
+}
+
+function closeNRModal(){
+  document.getElementById('nr-mo-ov').style.display = 'none';
+}
+
+function submitNRAll(){
+  var rs = document.getElementById('nr-mo-rs').value.trim();
+  var sb = document.getElementById('nr-mo-sub').value.trim() || '미입력';
+  if(!rs){ alert('사유를 입력해 주세요.'); return; }
+
+  var nrFacs = window._nrFacs || [];
+  // 체크된 것만
+  var checked = nrFacs.filter(function(f, i){
+    var chk = document.getElementById('nr-chk-'+i);
+    return chk && chk.checked;
+  });
+  if(!checked.length){ alert('제출할 공장을 선택해 주세요.'); return; }
+
+  var btn = document.getElementById('nr-mo-btn');
+  btn.textContent = '제출 중...'; btn.disabled = true;
+
+  var remaining = checked.length;
+  var errors = 0;
+
+  checked.forEach(function(f){
+    gasCall({
+      action:'saveReason', date:curDate, factoryName:f.name,
+      addr:f.addr||'', woori:f.woori||0, hyundai:f.hyundai||0, total:f.total||0,
+      reason:rs, submitter:sb
+    }, function(err){
+      remaining--;
+      if(err) errors++;
+      if(remaining === 0){
+        btn.textContent = '체크된 공장 일괄 제출'; btn.disabled = false;
+        closeNRModal();
+        loadReasons();
+        alert(checked.length + '개 공장 사유 제출 완료' + (errors>0?' ('+errors+'건 실패)':''));
+      }
+    });
+  });
+}
+
+function resetMapView(){
+  if(!naverMap) return;
+  naverMap.setCenter(new kakao.maps.LatLng(36.2,127.9));
+  naverMap.setLevel(13);
+  closePop();
+}
+
 function setLoad(on,msg){
   document.getElementById('ld').classList.toggle('hidden',!on);
   if(msg) document.getElementById('ld-ms').textContent=msg;
