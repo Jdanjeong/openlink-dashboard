@@ -30,7 +30,7 @@ window._kakaoMapCallback = null;
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --ban:#C8281E;  --ban-bg:#FFF1F0; --ban-bd:#FFCCC7;
-  --warn:#8A6300; --warn-bg:#FFFBE6;--warn-bd:#FFE58F;
+  --warn:#1a6e36; --warn-bg:#F0FDF4;--warn-bd:#86EFAC;
   --ok:#237804;   --ok-bg:#F6FFED;  --ok-bd:#B7EB8F;
   --dark:#1A1A2E; --mid:#64748B;    --lt:#94A3B8;
   --bg:#F1F5F9;   --white:#fff;     --bd:#E2E8F0;
@@ -95,7 +95,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 .cday:hover{background:var(--bg)}
 .cday.has-data{color:var(--dark);font-weight:600}
 .cday.has-ban{background:var(--ban-bg);color:var(--ban);font-weight:700;border:1px solid var(--ban-bd)}
-.cday.has-warn{background:var(--warn-bg);color:var(--warn);font-weight:600}
+.cday.has-warn{background:#F0FDF4;color:#15803d;font-weight:600;border:1px solid #86EFAC}
 .cday.sel{background:var(--dark)!important;color:#fff!important;border:none!important}
 .cday.today{box-shadow:0 0 0 1.5px var(--dark)}
 .cday.empty{cursor:default}
@@ -123,7 +123,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 .msv{font-size:21px;font-weight:700;line-height:1;margin-bottom:2px}
 .msl{font-size:9px;color:var(--mid);font-weight:500}
 .msv.ban{color:var(--ban)}
-.msv.warn{color:#D48806}
+.msv.warn{color:#15803d}
 .msv.ok{color:var(--ok)}
 
 /* 범례 */
@@ -137,7 +137,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 .lr:last-child{margin-bottom:0}
 .ld{width:11px;height:11px;border-radius:50%;flex-shrink:0}
 .ld.ban{background:var(--ban)}
-.ld.warn{background:#FAAD14}
+.ld.warn{background:#16a34a}
 .ld.ok{background:#52C41A}
 .ld.none{background:#CBD5E1}
 
@@ -151,14 +151,14 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 }
 #pop.show{display:block}
 #pop.ban-p{border-top-color:var(--ban)}
-#pop.warn-p{border-top-color:#FAAD14}
+#pop.warn-p{border-top-color:#16a34a}
 #pop.ok-p{border-top-color:var(--ok)}
 #pop-x{position:absolute;top:9px;right:11px;font-size:14px;cursor:pointer;color:var(--lt);background:none;border:none}
 .ph{display:flex;align-items:center;gap:6px;margin-bottom:5px}
 .pn{font-size:16px;font-weight:800}
 .pb{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap}
 .pb.ban{background:var(--ban-bg);color:var(--ban);border:1px solid var(--ban-bd)}
-.pb.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd)}
+.pb.warn{background:#F0FDF4;color:#15803d;border:1px solid #86EFAC}
 .pb.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
 .pa{font-size:12px;color:var(--mid);margin-bottom:10px;line-height:1.5}
 .plbl{font-size:10px;color:var(--lt);font-weight:600;margin-bottom:4px}
@@ -199,10 +199,10 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
 .col-hd-top{display:flex;align-items:center;gap:8px}
 .col-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px;display:flex;align-items:center;gap:3px}
 .col-badge.ban{background:var(--ban);color:#fff}
-.col-badge.warn{background:#FAAD14;color:#fff}
+.col-badge.warn{background:#16a34a;color:#fff}
 .col-cnt{font-size:24px;font-weight:700;line-height:1}
 .col-cnt.ban{color:var(--ban)}
-.col-cnt.warn{color:#D48806}
+.col-cnt.warn{color:#15803d}
 .col-date{font-size:10px;color:var(--lt);margin-left:auto}
 
 /* 사유필요 알림 */
@@ -221,7 +221,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
   border-radius:5px;font-size:11px;outline:none;font-family:var(--font);
 }
 .col-inp.ban:focus{border-color:var(--ban)}
-.col-inp.warn:focus{border-color:#FAAD14}
+.col-inp.warn:focus{border-color:#16a34a}
 
 /* 카드 리스트 */
 .col-list{flex:1;overflow:hidden;padding:0;position:relative}
@@ -272,17 +272,17 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
   cursor:pointer;transition:all .12s;margin-bottom:7px;
 }
 .wc:hover{box-shadow:0 3px 8px rgba(200,140,0,.2);transform:translateY(-1px)}
-.wc.on{box-shadow:0 0 0 2px #FAAD14;transform:translateY(-1px)}
+.wc.on{box-shadow:0 0 0 2px #16a34a;transform:translateY(-1px)}
 .wc-top{padding:9px 11px 6px;border-bottom:1px solid var(--warn-bd)}
 .wc-row1{display:flex;align-items:center;gap:5px;margin-bottom:3px}
-.wc-seq{font-size:9px;font-weight:700;color:var(--warn);background:#fff;border:1px solid var(--warn-bd);padding:1px 5px;border-radius:3px;flex-shrink:0}
-.wc-nm{font-size:14px;font-weight:800;color:var(--warn);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.wc-ad{font-size:10px;color:#875500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.wc-seq{font-size:9px;font-weight:700;color:#15803d;background:#fff;border:1px solid #86EFAC;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.wc-nm{font-size:14px;font-weight:800;color:#15803d;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.wc-ad{font-size:10px;color:#166534;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .wc-bt{padding:7px 11px;display:flex;gap:5px}
 .wcp{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500}
 .wcp.w{background:#DBEAFE;color:#1E40AF}
 .wcp.h{background:#DCFCE7;color:#166534}
-.wcp.t{background:#EDE9FE;color:#5B21B6}
+.wcp.t{background:#DCFCE7;color:#166534}
 
 /* 빈 상태 */
 .empty{padding:32px 12px;text-align:center}
@@ -385,14 +385,14 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
     <div id="map"></div>
     <div id="ms">
       <div class="msc"><div class="msv ban" id="ms-b">-</div><div class="msl">🔴 금지</div></div>
-      <div class="msc"><div class="msv warn" id="ms-w">-</div><div class="msl">🟡 제한</div></div>
+      <div class="msc"><div class="msv warn" id="ms-w">-</div><div class="msl">🟢 우선</div></div>
       <div class="msc"><div class="msv ok" id="ms-o">-</div><div class="msl">🟢 원활</div></div>
       <div class="msc" style="min-width:82px"><div class="msv" id="ms-t" style="color:#374151;font-size:18px">-</div><div class="msl">당일접수</div></div>
     </div>
     <div id="leg">
       <div class="lt-title">마커 범례</div>
       <div class="lr"><div class="ld ban"></div>입고금지 (!)</div>
-      <div class="lr"><div class="ld warn"></div>입고제한</div>
+      <div class="lr"><div class="ld warn"></div>입고우선</div>
       <div class="lr"><div class="ld ok"></div>원활</div>
       <div class="lr"><div class="ld none"></div>실적없음</div>
     </div>
@@ -424,7 +424,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);font-size:13px;col
     <div id="warn-col">
       <div class="col-hd">
         <div class="col-hd-top">
-          <div class="col-badge warn">🟡 입고제한</div>
+          <div class="col-badge warn">🟢 입고우선</div>
           <div class="col-cnt warn" id="warn-cnt">0</div>
           <div class="col-date" id="warn-date"></div>
         </div>
@@ -798,7 +798,7 @@ function renderWarn(list){
   var w=document.getElementById('warn-list');
   stopRolling('warn');
   if(!list.length){
-    w.innerHTML='<div class="roll-wrap"><div class="empty"><div class="empty-ic">👍</div><div class="empty-ms">입고제한 공장 없음</div><div class="empty-sb">'+curDate+'</div></div></div>';
+    w.innerHTML='<div class="roll-wrap"><div class="empty"><div class="empty-ic">👍</div><div class="empty-ms">입고우선 공장 없음</div><div class="empty-sb">'+curDate+'</div></div></div>';
     return;
   }
   var html='';
@@ -870,7 +870,7 @@ function plotMarkers(){
     var pos=geoCache[f.addr]; if(!pos) return;
     var cfg={
       ban: {c:'#C8281E',sz:18},
-      warn:{c:'#FAAD14',sz:14},
+      warn:{c:'#16a34a',sz:14},
       ok:  {c:'#52C41A',sz:10},
       none:{c:'#CBD5E1',sz:7}
     }[f.status]||{c:'#CBD5E1',sz:7};
@@ -912,7 +912,7 @@ function showPop(f){
   selName=f.name;
   document.getElementById('pop-nm').textContent=f.name||'';
   var bd=document.getElementById('pop-bd');
-  var lb={ban:'🔴 입고금지',warn:'🟡 입고제한',ok:'🟢 원활',none:'⚪ 실적없음'};
+  var lb={ban:'🔴 입고금지',warn:'🟢 입고우선',ok:'🟢 원활',none:'⚪ 실적없음'};
   bd.textContent=lb[f.status]||'';
   bd.className='pb '+(f.status==='ban'?'ban':f.status==='warn'?'warn':'ok');
   document.getElementById('pop-ad').textContent=f.addr||'';
@@ -936,7 +936,7 @@ function hilite(name){
   Object.keys(markers).forEach(function(n){
     var mk=markers[n];
     var f=facs.find(function(x){return x.name===n;}); if(!f) return;
-    var base={ban:{c:'#C8281E',sz:18},warn:{c:'#FAAD14',sz:14},ok:{c:'#52C41A',sz:10},none:{c:'#CBD5E1',sz:7}}[f.status]||{c:'#CBD5E1',sz:7};
+    var base={ban:{c:'#C8281E',sz:18},warn:{c:'#16a34a',sz:14},ok:{c:'#52C41A',sz:10},none:{c:'#CBD5E1',sz:7}}[f.status]||{c:'#CBD5E1',sz:7};
     var isOn=(n===name);
     var sz=isOn?base.sz+4:base.sz;
     var stroke=isOn?'#1A1A2E':'white';
